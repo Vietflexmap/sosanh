@@ -1,11 +1,15 @@
 (() => {
 'use strict';
 
-const WORLD_URLS=[
- 'https://raw.githubusercontent.com/TheTrueSize/natural-earth-vector/main/geojson/ne_110m_admin_0_countries.geojson',
- 'https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_admin_0_countries.geojson',
- 'https://cdn.jsdelivr.net/gh/nvkelso/natural-earth-vector@master/geojson/ne_110m_admin_0_countries.geojson'
+const PRIMARY_WORLD_URLS=[
+ 'https://cdn.jsdelivr.net/gh/datasets/geo-countries@main/data/countries.geojson',
+ 'https://raw.githubusercontent.com/datasets/geo-countries/main/data/countries.geojson'
 ];
+const FALLBACK_WORLD_URLS=[
+ 'https://cdn.jsdelivr.net/gh/nvkelso/natural-earth-vector@master/geojson/ne_110m_admin_0_countries.geojson',
+ 'https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_admin_0_countries.geojson'
+];
+let worldSourceLabel='Geo Countries · Natural Earth 1:10m';
 const VIETNAM_ISO='VNM',MAX_LAT=84.8;
 const WB={population:'SP.POP.TOTL',gdp:'NY.GDP.MKTP.CD',gdppc:'NY.GDP.PCAP.CD'};
 const ISLAND_REFS=[
@@ -44,8 +48,14 @@ let currentTarget,currentLat=17,currentLon=106,currentRotation=0,currentProjecti
 const indicatorCache=new Map();
 let equalProjection,equalPath,equalSvg,equalWorldG,equalVnPath,equalIslandG;
 
-const countryName=f=>f?.properties?.NAME_VI||f?.properties?.NAME||f?.properties?.ADMIN||'Không rõ';
-const countryIso=f=>{const p=f?.properties||{};return String([p.ADM0_A3,p.ISO_A3,p.WB_A3,p.SOV_A3].find(v=>v&&v!=='-99')||'').toUpperCase()};
+const countryName=f=>f?.properties?.name||f?.properties?.NAME_VI||f?.properties?.NAME||f?.properties?.ADMIN||'Không rõ';
+const countryIso=f=>{
+ const p=f?.properties||{};
+ return String([
+   p['ISO3166-1-Alpha-3'],
+   p.ADM0_A3,p.ISO_A3,p.WB_A3,p.SOV_A3
+ ].find(v=>v&&v!=='-99')||'').toUpperCase();
+};
 const fmt=(v,s='')=>Number.isFinite(v)?new Intl.NumberFormat('vi-VN',{maximumFractionDigits:0}).format(v)+s:'—';
 function formatPopulation(v){if(!Number.isFinite(v))return'—';if(v>=1e9)return(v/1e9).toLocaleString('vi-VN',{maximumFractionDigits:2})+' tỷ';if(v>=1e6)return(v/1e6).toLocaleString('vi-VN',{maximumFractionDigits:1})+' triệu';return fmt(v)}
 function formatUSD(v){if(!Number.isFinite(v))return'—';if(v>=1e12)return'$'+(v/1e12).toLocaleString('vi-VN',{maximumFractionDigits:2})+' nghìn tỷ';if(v>=1e9)return'$'+(v/1e9).toLocaleString('vi-VN',{maximumFractionDigits:1})+' tỷ';return'$'+fmt(v)}
@@ -71,7 +81,7 @@ function overlayFeature(){return{type:'Feature',properties:{name:'Việt Nam'},g
 function transformedIslandRefs(){const tx=pointTransformer(currentLat,currentLon);return ISLAND_REFS.map(x=>({...x,coord:tx(x.coord)}))}
 function mercatorAreaFactor(lat){const p=Math.min(MAX_LAT,Math.max(-MAX_LAT,lat))*Math.PI/180;return 1/Math.cos(p)**2}
 
-async function fetchJsonWithTimeout(url,ms=9000){
+async function fetchJsonWithTimeout(url,ms=22000){
  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),ms);
  try{
   const r=await fetch(url,{signal:controller.signal,cache:'force-cache'});
@@ -79,16 +89,34 @@ async function fetchJsonWithTimeout(url,ms=9000){
   const text=await r.text();
   if(!text||text.length<1000)throw new Error('Dữ liệu rỗng');
   const json=JSON.parse(text);
-  if(!json||json.type!=='FeatureCollection'||!Array.isArray(json.features)||json.features.length<100)throw new Error('GeoJSON không hợp lệ');
+  if(!json||json.type!=='FeatureCollection'||!Array.isArray(json.features)||json.features.length<150)throw new Error('GeoJSON không hợp lệ');
   return json;
  }finally{clearTimeout(timer)}
 }
+async function firstValid(urls,timeout){
+ let lastError=null;
+ for(const url of urls){
+  try{return await fetchJsonWithTimeout(url,timeout)}
+  catch(err){lastError=err}
+ }
+ throw lastError||new Error('Không có nguồn dữ liệu khả dụng');
+}
 async function loadWorld(){
- ui.loading.querySelector('strong').textContent='Đang nạp bản đồ thế giới…';
+ const label=ui.loading.querySelector('strong');
+ label.textContent='Đang nạp đường biên quốc gia chi tiết 1:10m…';
  try{
-  return await Promise.any(WORLD_URLS.map(url=>fetchJsonWithTimeout(url)));
- }catch(err){
-  throw new Error('Không thể tải dữ liệu bản đồ thế giới. Hãy tải lại trang hoặc kiểm tra kết nối mạng.');
+  const data=await firstValid(PRIMARY_WORLD_URLS,22000);
+  worldSourceLabel='Geo Countries · Natural Earth 1:10m';
+  return data;
+ }catch(primaryError){
+  label.textContent='Nguồn 1:10m chậm, đang dùng bản dự phòng…';
+  try{
+   const data=await firstValid(FALLBACK_WORLD_URLS,9000);
+   worldSourceLabel='Natural Earth 1:110m · fallback';
+   return data;
+  }catch(fallbackError){
+   throw new Error('Không thể tải dữ liệu đường biên quốc gia. Hãy tải lại trang hoặc kiểm tra kết nối mạng.');
+  }
  }
 }
 
@@ -156,7 +184,7 @@ async function updateComparison(feature){
  ui.vnGDP.textContent=formatUSD(vg?.value);ui.targetGDP.textContent=formatUSD(tg?.value);ui.gdpRatio.textContent=ratioText(tg?.value,vg?.value,name,'Việt Nam')+(tg?.year?' · '+tg.year:'');
  ui.vnGDPpc.textContent=formatUSD(vpc?.value);ui.targetGDPpc.textContent=formatUSD(tpc?.value);ui.gdpPcRatio.textContent=ratioText(tpc?.value,vpc?.value,name,'Việt Nam')+(tpc?.year?' · '+tpc.year:'');
  const overlap=intersectionAreaKm2(overlayFeature(),currentTarget),fp=Number.isFinite(overlap)&&Number.isFinite(td)?overlap*td:NaN;ui.footprintPopulation.textContent=formatPopulation(fp);ui.footprintNote.textContent=Number.isFinite(overlap)?'Ước tính từ '+fmt(overlap,' km²')+' footprint nằm trong '+name+' × mật độ trung bình quốc gia.':'Không tính được phần giao hình học.';
- ui.status.textContent='Natural Earth · World Bank '+(tp?.year||'')+' · '+(currentProjection==='mercator'?'Vietflex / Google Roadmap':'D3 / Equal Earth');
+ ui.status.textContent=worldSourceLabel+' · World Bank '+(tp?.year||'')+' · '+(currentProjection==='mercator'?'Vietflex / Google Roadmap':'D3 / Equal Earth');
 }
 function moveToFeature(f,fit=false){if(!f)return;const [lat,lon]=centerOf(f);currentTarget=f;currentLat=lat;currentLon=lon;redrawAll();updateComparison(f);ui.select.value=countryIso(f);if(currentProjection==='mercator'&&fit){const b=new Vietflex.GeoJSON(f).getBounds();if(b.isValid())map.fitBounds(b.pad(.45),{maxZoom:5,animate:true})}}
 function switchProjection(mode){currentProjection=mode;const m=mode==='mercator';ui.mercator.classList.toggle('active',m);ui.equalEarth.classList.toggle('active',!m);ui.mercatorBtn.classList.toggle('active',m);ui.equalEarthBtn.classList.toggle('active',!m);if(m)setTimeout(()=>map.invalidateSize(),0);else setTimeout(sizeEqualEarth,0);renderDistortion()}
@@ -176,7 +204,19 @@ async function init(){
   renderChart();world=await loadWorld();
   vnSource=world.features.find(f=>countryIso(f)===VIETNAM_ISO||countryName(f).toLowerCase().includes('vietnam'));if(!vnSource)throw new Error('Không tìm thấy polygon Việt Nam');
   vnCenter=centerOf(vnSource);vnAreaKm2=areaKm2(vnSource);vnNorthSouthKm=northSouthKm(vnSource);currentLat=vnCenter[0];currentLon=vnCenter[1];currentTarget=vnSource;
-  countriesLayer=new Vietflex.GeoJSON(world,{style:{color:'#728078',weight:.65,fillColor:'#fff',fillOpacity:.08},onEachFeature:(f,l)=>{l.on('click',()=>moveToFeature(f,true));l.bindTooltip(countryName(f),{sticky:true})}}).addTo(map);
+  countriesLayer=new Vietflex.GeoJSON(world,{
+   style:f=>({
+    color:'#55645d',
+    weight:countryIso(f)?0.85:0.65,
+    opacity:0.9,
+    fillColor:'#ffffff',
+    fillOpacity:0.025
+   }),
+   onEachFeature:(f,l)=>{
+    l.on('click',()=>moveToFeature(f,true));
+    l.bindTooltip(countryName(f),{sticky:true,direction:'top'});
+   }
+  }).addTo(map);
   populateSelect();initEqualEarth();redrawAll();await updateComparison(vnSource);map.fitBounds(new Vietflex.GeoJSON(vnSource).getBounds().pad(.9),{maxZoom:5});
   ui.loading.classList.add('hidden');setTimeout(()=>ui.loading.remove(),350);
  }catch(err){ui.loading.innerHTML='<strong>Không thể khởi tạo</strong><span>'+String(err.message||err)+'</span>'}
