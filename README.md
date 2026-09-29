@@ -1,67 +1,83 @@
-# Việt Nam · True Size
+# Vietnam Global Comparator
 
-Trang WebGIS tương tác để đưa **hình dạng Việt Nam** tới các vị trí khác nhau trên thế giới và quan sát trực tiếp biến dạng của phép chiếu Web Mercator.
+**Demo:** https://vietflexmap.github.io/sosanh/
 
-**Demo dự kiến:** https://vietflexmap.github.io/sosanh/
+WebGIS tương tác lấy **Việt Nam làm đối tượng chuẩn** để so sánh với các quốc gia khác về hình dạng, diện tích, chiều dài Bắc–Nam, dân số, mật độ dân số, GDP, GDP/người và biến dạng phép chiếu.
 
-## Mục tiêu
+## Điểm cốt lõi
 
-Khác với cách dịch polygon bằng cách cộng/trừ kinh độ và vĩ độ, dự án dùng **phép quay cứng trên mặt cầu**:
+Polygon Việt Nam không được dịch bằng cách cộng trừ kinh/vĩ độ. Ứng dụng:
 
-1. Chuyển mỗi đỉnh `[lon, lat]` thành vector đơn vị 3D.
-2. Tính ma trận quay đưa tâm Việt Nam tới tâm/vị trí đích.
-3. Áp dụng cùng phép quay cho toàn bộ polygon Việt Nam.
-4. Chuyển các vector trở lại `[lon, lat]`.
-5. Leaflet/Web Mercator thực hiện bước chiếu để hiển thị.
+1. chuyển từng đỉnh của Việt Nam sang vector đơn vị 3D;
+2. tính phép quay cứng trên mặt cầu từ tâm Việt Nam tới vị trí đích;
+3. quay toàn bộ polygon bằng cùng một phép biến đổi;
+4. chuyển trở lại longitude/latitude;
+5. render cùng dữ liệu qua hai projection khác nhau.
 
-Vì phép quay trên mặt cầu không tùy ý co giãn polygon, phần thay đổi kích thước nhìn thấy trên màn hình chủ yếu đến từ **phép chiếu Mercator**.
+### Mercator
 
-Hệ số phóng đại diện tích Mercator trên mô hình cầu:
+- Leaflet + OpenStreetMap.
+- Bảo toàn góc cục bộ.
+- Phóng đại diện tích theo vĩ độ, gần đúng:
 
 ```text
 K_area ≈ sec²(φ) = 1 / cos²(φ)
 ```
 
-## Chức năng
+### Equal Earth
 
-- Việt Nam là đối tượng so sánh gốc.
-- Kéo Việt Nam trực tiếp trên bản đồ.
-- Bấm một quốc gia hoặc chọn từ danh sách để đưa Việt Nam tới vị trí đó.
-- So sánh:
-  - diện tích địa lý;
-  - dân số;
-  - mật độ dân số;
-  - tỷ lệ so với Việt Nam;
-  - hệ số phóng đại diện tích Mercator tại vĩ độ hiện tại.
-- Dữ liệu dân số ưu tiên bản ghi gần nhất có dữ liệu từ World Bank.
-- Nếu World Bank không truy cập được, dùng `POP_EST` trong Natural Earth làm fallback.
+- D3 `geoEqualEarth()`.
+- Equal-area projection.
+- Dùng cùng GeoJSON và cùng polygon Việt Nam đã quay trên mặt cầu.
+- Cho phép chuyển tức thời Mercator ↔ Equal Earth để thấy khác biệt do projection.
+
+## Chỉ số so sánh
+
+- Diện tích địa lý.
+- Chiều dài Bắc–Nam xấp xỉ theo hai điểm biên cực Bắc/cực Nam.
+- Dân số.
+- Mật độ dân số.
+- GDP danh nghĩa.
+- GDP/người.
+- Dân số ước tính trong footprint Việt Nam khi đặt lên quốc gia đích.
+- Hệ số phóng đại Mercator tại vĩ độ hiện tại.
+- Biểu đồ cùng một Việt Nam tại 0°, 30°, 45°, 60°, 75°.
+
+## World Bank API
+
+Các indicator dùng ở runtime:
+
+- `SP.POP.TOTL` — Population, total.
+- `NY.GDP.MKTP.CD` — GDP (current US$).
+- `NY.GDP.PCAP.CD` — GDP per capita (current US$).
+
+Ứng dụng lấy bản ghi gần nhất có dữ liệu của từng quốc gia.
+
+## Footprint population
+
+Phiên bản hiện tại tính:
+
+```text
+estimated population
+= area(Vietnam footprint ∩ target country)
+× average population density(target country)
+```
+
+Đây là **ước tính cấp quốc gia**, hữu ích cho so sánh nhanh nhưng chưa phải population-on-grid.
+
+Để nâng lên mức phân tích dân số không gian thật, nên thay module này bằng raster dân số như WorldPop hoặc GHSL và tích phân các cell nằm trong footprint.
 
 ## Dữ liệu
 
-- **Natural Earth** — ranh giới quốc gia, public domain.
-- **World Bank** — chỉ số `SP.POP.TOTL`.
-- **OpenStreetMap** — basemap.
-- **TheTrueSize/natural-earth-vector** — fork Natural Earth được dùng làm URL dữ liệu trực tiếp.
+- Natural Earth — ranh giới quốc gia, public domain.
+- World Bank — population/GDP indicators.
+- OpenStreetMap — basemap Mercator.
+- D3 — Equal Earth rendering.
+- Turf.js — diện tích, khoảng cách, point-in-polygon và intersection.
 
-> Ranh giới trong Natural Earth được dùng cho mục đích minh họa và so sánh địa lý, không nhằm thể hiện quan điểm pháp lý về chủ quyền hoặc phân định biên giới.
-
-## Diện tích nào được hiển thị?
-
-Con số diện tích trong bảng được tính bằng `turf.area()` từ polygon địa lý và biểu diễn diện tích trên mô hình cầu. Nó **không** được lấy từ số pixel của Web Mercator.
-
-Do đó dự án cố ý tách:
-
-```text
-diện tích địa lý của polygon
-            ≠
-diện tích nhìn thấy trên màn hình Mercator
-```
-
-Đối với nghiệp vụ địa chính hoặc đo đạc pháp lý, cần dùng CRS, ellipsoid, datum và phương pháp tính diện tích theo tiêu chuẩn chuyên ngành; demo này không thay thế phép đo địa chính.
+> Ranh giới dùng cho minh họa địa lý, không nhằm thể hiện quan điểm pháp lý về chủ quyền hoặc phân định biên giới.
 
 ## Chạy local
-
-Chỉ cần một HTTP server tĩnh:
 
 ```bash
 python -m http.server 8080
@@ -69,14 +85,6 @@ python -m http.server 8080
 
 Mở `http://localhost:8080`.
 
-## GitHub Pages
-
-Repository được thiết kế để chạy trực tiếp từ branch `main`. Trong GitHub:
-
-`Settings → Pages → Deploy from a branch → main / root`.
-
 ## License
 
-Mã ứng dụng: MIT.
-
-Natural Earth: public domain, xem `THIRD_PARTY.md`.
+Mã ứng dụng: MIT. Xem thêm `THIRD_PARTY.md`.
