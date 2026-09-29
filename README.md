@@ -2,89 +2,54 @@
 
 **Demo:** https://vietflexmap.github.io/sosanh/
 
-WebGIS tương tác lấy **Việt Nam làm đối tượng chuẩn** để so sánh với các quốc gia khác về hình dạng, diện tích, chiều dài Bắc–Nam, dân số, mật độ dân số, GDP, GDP/người và biến dạng phép chiếu.
+## Tương tác chính
 
-## Điểm cốt lõi
-
-Polygon Việt Nam không được dịch bằng cách cộng trừ kinh/vĩ độ. Ứng dụng:
-
-1. chuyển từng đỉnh của Việt Nam sang vector đơn vị 3D;
-2. tính phép quay cứng trên mặt cầu từ tâm Việt Nam tới vị trí đích;
-3. quay toàn bộ polygon bằng cùng một phép biến đổi;
-4. chuyển trở lại longitude/latitude;
-5. render cùng dữ liệu qua hai projection khác nhau.
-
-### Mercator
-
-- Leaflet + OpenStreetMap.
-- Bảo toàn góc cục bộ.
-- Phóng đại diện tích theo vĩ độ, gần đúng:
+- Nhấn giữ **trực tiếp trên polygon Việt Nam** để kéo đi; không cần kéo một marker tâm.
+- Khi thả Việt Nam lên một quốc gia, hệ thống lấy quốc gia nằm dưới **tâm hiện tại của Việt Nam** và cập nhật toàn bộ bảng so sánh.
+- La bàn cho phép quay Việt Nam **0–359°** quanh tâm hiện tại.
+- Góc xoay được thực hiện bằng phép quay 3D quanh trục xuyên tâm sau phép vận chuyển trên mặt cầu:
 
 ```text
-K_area ≈ sec²(φ) = 1 / cos²(φ)
+P' = R_spin(theta) · R_move · P
 ```
 
-### Equal Earth
+Do đó hình học không bị scale/shear tùy ý.
 
-- D3 `geoEqualEarth()`.
-- Equal-area projection.
-- Dùng cùng GeoJSON và cùng polygon Việt Nam đã quay trên mặt cầu.
-- Cho phép chuyển tức thời Mercator ↔ Equal Earth để thấy khác biệt do projection.
+## Hoàng Sa / Trường Sa
 
-## Chỉ số so sánh
+Trang hiển thị hai **điểm tham chiếu trực quan** có nhãn Hoàng Sa và Trường Sa. Các điểm này dùng cùng phép biến đổi 3D với polygon Việt Nam nên luôn đi cùng khi kéo và xoay.
 
-- Diện tích địa lý.
-- Chiều dài Bắc–Nam xấp xỉ theo hai điểm biên cực Bắc/cực Nam.
-- Dân số.
-- Mật độ dân số.
-- GDP danh nghĩa.
-- GDP/người.
-- Dân số ước tính trong footprint Việt Nam khi đặt lên quốc gia đích.
-- Hệ số phóng đại Mercator tại vĩ độ hiện tại.
-- Biểu đồ cùng một Việt Nam tại 0°, 30°, 45°, 60°, 75°.
+Chúng không được mô hình hóa thành polygon ranh giới pháp lý trong ứng dụng này.
 
-## World Bank API
+> Ranh giới và nhãn bản đồ phục vụ minh họa địa lý, không nhằm thể hiện kết luận pháp lý về chủ quyền hoặc phân định biên giới.
 
-Các indicator dùng ở runtime:
+## Hai phép chiếu
 
-- `SP.POP.TOTL` — Population, total.
-- `NY.GDP.MKTP.CD` — GDP (current US$).
-- `NY.GDP.PCAP.CD` — GDP per capita (current US$).
+- **Mercator:** Leaflet + OpenStreetMap.
+- **Equal Earth:** D3 `geoEqualEarth()`.
 
-Ứng dụng lấy bản ghi gần nhất có dữ liệu của từng quốc gia.
+Cùng một geometry đã biến đổi được render qua cả hai engine.
 
-## Footprint population
+## Chỉ số
 
-Phiên bản hiện tại tính:
-
-```text
-estimated population
-= area(Vietnam footprint ∩ target country)
-× average population density(target country)
-```
-
-Đây là **ước tính cấp quốc gia**, hữu ích cho so sánh nhanh nhưng chưa phải population-on-grid.
-
-Để nâng lên mức phân tích dân số không gian thật, nên thay module này bằng raster dân số như WorldPop hoặc GHSL và tích phân các cell nằm trong footprint.
+- diện tích địa lý;
+- chiều dài Bắc–Nam;
+- dân số;
+- mật độ dân số;
+- GDP;
+- GDP/người;
+- population footprint ước tính;
+- hệ số biến dạng Mercator;
+- biểu đồ 0° / 30° / 45° / 60° / 75°.
 
 ## Dữ liệu
 
-- Natural Earth — ranh giới quốc gia, public domain.
-- World Bank — population/GDP indicators.
-- OpenStreetMap — basemap Mercator.
+- Natural Earth — country boundaries;
+- World Bank — population/GDP;
+- OpenStreetMap — Mercator basemap;
+- Turf.js — spatial calculations;
 - D3 — Equal Earth rendering.
-- Turf.js — diện tích, khoảng cách, point-in-polygon và intersection.
-
-> Ranh giới dùng cho minh họa địa lý, không nhằm thể hiện quan điểm pháp lý về chủ quyền hoặc phân định biên giới.
-
-## Chạy local
-
-```bash
-python -m http.server 8080
-```
-
-Mở `http://localhost:8080`.
 
 ## License
 
-Mã ứng dụng: MIT. Xem thêm `THIRD_PARTY.md`.
+Mã ứng dụng: MIT. Xem `THIRD_PARTY.md`.
