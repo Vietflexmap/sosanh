@@ -1,0 +1,82 @@
+:root{
+  --paper:#f7f5ef;
+  --ink:#17251f;
+  --muted:#66736c;
+  --line:rgba(23,37,31,.14);
+  --vn:#d71920;
+  --gold:#f4cf39;
+  --target:#1b6ca8;
+  --shadow:0 18px 60px rgba(20,32,26,.16);
+}
+*{box-sizing:border-box}
+html,body,#app,#map{width:100%;height:100%;margin:0}
+body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--paper);overflow:hidden}
+#map{position:absolute;inset:0;background:#dce9ed}
+.leaflet-control-attribution{font-size:10px!important;background:rgba(255,255,255,.72)!important}
+.topbar{
+  position:absolute;z-index:1000;left:24px;top:20px;right:24px;
+  display:flex;align-items:flex-start;justify-content:space-between;pointer-events:none
+}
+.brand{display:flex;gap:12px;align-items:center;background:rgba(247,245,239,.94);backdrop-filter:blur(12px);border:1px solid var(--line);box-shadow:var(--shadow);padding:10px 14px;border-radius:16px;pointer-events:auto;max-width:620px}
+.brand h1{font-size:18px;line-height:1.1;margin:0 0 4px;letter-spacing:-.02em}
+.brand p{font-size:12px;line-height:1.35;margin:0;color:var(--muted)}
+.flag{width:36px;height:26px;border-radius:5px;background:var(--vn);display:grid;place-items:center;color:var(--gold);font-size:18px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
+.icon-btn{pointer-events:auto;width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:rgba(247,245,239,.95);font-weight:800;font-size:17px;cursor:pointer;box-shadow:0 8px 30px rgba(20,32,26,.12)}
+.panel{
+  position:absolute;z-index:900;top:106px;left:24px;width:min(390px,calc(100vw - 48px));max-height:calc(100vh - 130px);overflow:auto;
+  background:rgba(247,245,239,.95);backdrop-filter:blur(14px);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:16px
+}
+.controls label,.metric-title,.eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.11em;font-weight:800;color:var(--muted)}
+.select-row{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:8px}
+select,button{font:inherit}
+select,.select-row button{height:42px;border:1px solid var(--line);border-radius:11px;background:white;color:var(--ink);padding:0 12px}
+.select-row button{cursor:pointer;font-weight:700}
+.hint{font-size:11px;line-height:1.45;color:var(--muted);margin:8px 2px 0}
+.compare-card{border-top:1px solid var(--line);margin-top:15px;padding-top:15px}
+.compare-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.compare-head h2{font-size:18px;margin:3px 0 8px;letter-spacing:-.03em}
+.badge{font:700 10px ui-monospace,SFMono-Regular,Menlo,monospace;border:1px solid var(--line);padding:5px 7px;border-radius:7px;background:#fff}
+.metric{padding:10px 0;border-bottom:1px solid var(--line)}
+.metric-values{display:grid;grid-template-columns:1fr 26px 1fr;align-items:baseline;gap:4px;margin-top:5px}
+.metric-values strong{font-size:17px;font-variant-numeric:tabular-nums}
+.metric-values strong:last-child{text-align:right}
+.metric-values span{text-align:center;font-size:10px;color:var(--muted)}
+.metric-sub{font-size:11px;margin-top:3px;color:var(--muted);text-align:right}
+.distortion{padding:13px 0 3px}
+.distortion>div:first-child{display:flex;justify-content:space-between;gap:12px;font-size:12px}
+.distortion .bar{height:6px;border-radius:99px;background:#e5e2d8;margin:8px 0;overflow:hidden}
+.distortion .bar i{display:block;width:4%;height:100%;background:linear-gradient(90deg,#e6bf28,var(--vn));border-radius:inherit;transition:width .18s ease}
+.distortion small{font-size:10.5px;line-height:1.45;color:var(--muted);display:block}
+.legend{display:grid;gap:7px;padding:14px 0 5px;font-size:11px;color:var(--muted)}
+.legend div{display:flex;align-items:center;gap:8px}
+.swatch{width:18px;height:10px;border-radius:3px;border:1px solid rgba(0,0,0,.18)}
+.swatch.vn{background:rgba(215,25,32,.52);border-color:#a91017}
+.swatch.target{background:rgba(27,108,168,.18);border-color:#1b6ca8}
+.swatch.world{background:rgba(255,255,255,.38);border-color:#7d8983}
+footer{display:flex;justify-content:space-between;gap:10px;border-top:1px solid var(--line);padding-top:12px;margin-top:9px;font-size:10px;color:var(--muted)}
+footer a{color:var(--ink);font-weight:800;text-decoration:none}
+.vn-handle{width:20px!important;height:20px!important;margin-left:-10px!important;margin-top:-10px!important;border-radius:50%;background:var(--vn);border:3px solid #fff;box-shadow:0 2px 12px rgba(0,0,0,.35)}
+.vn-tooltip{background:#17251f;color:#fff;border:0;box-shadow:0 6px 18px rgba(0,0,0,.18);font-weight:700}
+.vn-tooltip:before{border-top-color:#17251f!important}
+dialog{width:min(560px,calc(100vw - 32px));border:1px solid var(--line);border-radius:20px;background:var(--paper);color:var(--ink);padding:24px;box-shadow:0 24px 90px rgba(0,0,0,.3)}
+dialog::backdrop{background:rgba(12,22,17,.48);backdrop-filter:blur(4px)}
+dialog h2{margin:0 35px 12px 0;font-size:22px}
+dialog p{font-size:13px;line-height:1.6;color:#445149}
+.dialog-close{position:absolute;right:15px;top:12px;border:0;background:transparent;font-size:28px;cursor:pointer}
+.formula{font:700 17px ui-monospace,SFMono-Regular,Menlo,monospace;background:#fff;border:1px solid var(--line);border-radius:12px;padding:13px;text-align:center}
+.note{border-left:3px solid var(--gold);padding-left:10px}
+.loading{position:absolute;z-index:2000;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;background:var(--paper);font-size:13px;transition:opacity .3s ease}
+.loading.hidden{opacity:0;pointer-events:none}
+.spinner{width:30px;height:30px;border:3px solid #ddd8c9;border-top-color:var(--vn);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(max-width:700px){
+  .topbar{left:12px;right:12px;top:10px}
+  .brand{padding:8px 10px;max-width:calc(100vw - 58px)}
+  .brand p{display:none}
+  .brand h1{font-size:15px}
+  .panel{left:10px;right:10px;top:auto;bottom:10px;width:auto;max-height:48vh;border-radius:18px}
+  .controls .hint,.legend,footer{display:none}
+  .metric{padding:7px 0}
+  .metric-values strong{font-size:15px}
+  .compare-head h2{font-size:16px}
+}
