@@ -1,4 +1,4 @@
-# Vietnam Global Comparator
+# Bảng so sánh toàn cầu về Việt Nam
 
 **Demo:** https://vietflexmap.github.io/sosanh/
 
@@ -101,3 +101,17 @@ new Vietflex.AttributionControl({ position: 'bottomright' }).addTo(map);
 ```
 
 The comparator uses Vietflex native vector classes (`GeoJSON`, `CircleMarker`, `LayerGroup`) instead of loading a second Leaflet runtime. Dragging uses PointerEvent-compatible events.
+
+
+## Giao diện so sánh trực quan
+
+Bảng so sánh dùng Việt Nam làm mốc 100% và hiển thị hai cột cho từng chỉ tiêu:
+
+- đỏ: Việt Nam;
+- xanh dương: quốc gia đích;
+- số liệu tuyệt đối hiển thị trên mỗi cột;
+- dòng tỷ lệ cho biết quốc gia đích bằng bao nhiêu % Việt Nam và lớn hơn/nhỏ hơn bao nhiêu %.
+
+Các chỉ tiêu gồm diện tích, chiều dài Bắc–Nam, dân số, mật độ dân số, GDP, GDP/người và dân số ước tính trong footprint Việt Nam.
+
+La bàn xoay 360° được chuyển thành control nổi góc phải dưới có thể thu gọn. Projection switch và nút thông tin nằm ở cụm công cụ góc phải trên.
