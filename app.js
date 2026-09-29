@@ -24,9 +24,20 @@ const ui={
  compass:$('compass'),compassNeedle:$('compassNeedle'),rotationValue:$('rotationValue'),rotationRange:$('rotationRange'),resetRotation:$('resetRotation')
 };
 
-const map=L.map('map',{zoomControl:false,minZoom:2,maxZoom:10,worldCopyJump:true}).setView([17,106],4);
-L.control.zoom({position:'topright'}).addTo(map);
-L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap contributors'}).addTo(map);
+const map=Vietflex.vietflexMap('map',{
+  useLegacyGoogleTiles:true,
+  googleMapType:'roadmap',
+  center:[17,106],
+  zoom:4,
+  minZoom:2,
+  maxZoom:10,
+  maxBounds:null,
+  worldCopyJump:true,
+  zoomControl:false,
+  attributionControl:false
+});
+new Vietflex.ZoomControl({position:'topright'}).addTo(map);
+new Vietflex.AttributionControl({position:'bottomright'}).addTo(map);
 
 let world,countriesLayer,targetLayer,vnSource,vnCenter,vnAreaKm2=0,vnNorthSouthKm=0,vnOverlay,islandLayer;
 let currentTarget,currentLat=17,currentLon=106,currentRotation=0,currentProjection='mercator',requestToken=0,isDraggingVN=false;
@@ -86,26 +97,26 @@ function renderDistortion(){const f=mercatorAreaFactor(currentLat);if(currentPro
 function renderRotation(){ui.rotationValue.textContent=Math.round(currentRotation)+'°';ui.rotationRange.value=Math.round(currentRotation);ui.compassNeedle.style.transform='rotate('+currentRotation+'deg)';ui.compass.setAttribute('aria-valuenow',Math.round(currentRotation))}
 
 function featureAt(lat,lon){const pt=turf.point([lon,lat]);for(const f of world.features){try{if((f.geometry.type==='Polygon'||f.geometry.type==='MultiPolygon')&&turf.booleanPointInPolygon(pt,f))return f}catch(_){}}return null}
-function paintTarget(f){if(targetLayer)map.removeLayer(targetLayer);if(!f)return;targetLayer=L.geoJSON(f,{style:{color:'#1b6ca8',weight:2,fillColor:'#1b6ca8',fillOpacity:.12},interactive:false}).addTo(map);targetLayer.bringToBack()}
+function paintTarget(f){if(targetLayer)map.removeLayer(targetLayer);if(!f)return;targetLayer=new Vietflex.GeoJSON(f,{style:{color:'#1b6ca8',weight:2,fillColor:'#1b6ca8',fillOpacity:.12},interactive:false}).addTo(map);targetLayer.bringToBack()}
 
 function startLeafletDrag(e){
- L.DomEvent.stop(e.originalEvent);isDraggingVN=true;map.dragging.disable();
+ Vietflex.DomEvent.stop(e.originalEvent);isDraggingVN=true;map.dragging.disable();
  vnOverlay.eachLayer(l=>l.getElement?.()?.classList.add('dragging'));
 }
 function endLeafletDrag(){
  if(!isDraggingVN)return;isDraggingVN=false;map.dragging.enable();
  const f=featureAt(currentLat,currentLon)||vnSource;currentTarget=f;ui.select.value=f?countryIso(f):'';updateComparison(f);
 }
-map.on('mousemove',e=>{if(!isDraggingVN)return;currentLat=Math.max(-MAX_LAT,Math.min(MAX_LAT,e.latlng.lat));currentLon=e.latlng.lng;const f=featureAt(currentLat,currentLon);if(f)currentTarget=f;redrawAll(false);if(f){ui.targetName.textContent=countryName(f);ui.targetIso.textContent=countryIso(f)||'—'}});
-map.on('mouseup',endLeafletDrag);map.on('mouseout',()=>{if(isDraggingVN)endLeafletDrag()});
+map.on('pointermove',e=>{if(!isDraggingVN)return;currentLat=Math.max(-MAX_LAT,Math.min(MAX_LAT,e.latlng.lat));currentLon=e.latlng.lng;const f=featureAt(currentLat,currentLon);if(f)currentTarget=f;redrawAll(false);if(f){ui.targetName.textContent=countryName(f);ui.targetIso.textContent=countryIso(f)||'—'}});
+map.on('pointerup',endLeafletDrag);map.on('pointercancel',endLeafletDrag);
 
 function drawLeafletOverlay(){
  if(vnOverlay)map.removeLayer(vnOverlay);if(islandLayer)map.removeLayer(islandLayer);
- vnOverlay=L.geoJSON(overlayFeature(),{style:{color:'#a91017',weight:2,fillColor:'#d71920',fillOpacity:.43,className:'vn-draggable'},interactive:true}).addTo(map);
- vnOverlay.eachLayer(layer=>{layer.on('mousedown',startLeafletDrag);layer.on('touchstart',startLeafletDrag)});
- islandLayer=L.layerGroup(transformedIslandRefs().map(ref=>{
-   const m=L.circleMarker([ref.coord[1],ref.coord[0]],{radius:5,color:'#fff',weight:2,fillColor:'#d71920',fillOpacity:1,className:'vn-draggable'}).bindTooltip(ref.name,{permanent:true,direction:'right',className:'vn-island-label'});
-   m.on('mousedown',startLeafletDrag);m.on('touchstart',startLeafletDrag);return m;
+ vnOverlay=new Vietflex.GeoJSON(overlayFeature(),{style:{color:'#a91017',weight:2,fillColor:'#d71920',fillOpacity:.43,className:'vn-draggable'},interactive:true}).addTo(map);
+ vnOverlay.eachLayer(layer=>{layer.on('pointerdown',startLeafletDrag)});
+ islandLayer=new Vietflex.LayerGroup(transformedIslandRefs().map(ref=>{
+   const m=new Vietflex.CircleMarker([ref.coord[1],ref.coord[0]],{radius:5,color:'#fff',weight:2,fillColor:'#d71920',fillOpacity:1,className:'vn-draggable'}).bindTooltip(ref.name,{permanent:true,direction:'right',className:'vn-island-label'});
+   m.on('pointerdown',startLeafletDrag);return m;
  })).addTo(map);
  vnOverlay.bringToFront();islandLayer.eachLayer(layer=>{if(typeof layer.bringToFront==='function')layer.bringToFront()});
 }
@@ -145,9 +156,9 @@ async function updateComparison(feature){
  ui.vnGDP.textContent=formatUSD(vg?.value);ui.targetGDP.textContent=formatUSD(tg?.value);ui.gdpRatio.textContent=ratioText(tg?.value,vg?.value,name,'Việt Nam')+(tg?.year?' · '+tg.year:'');
  ui.vnGDPpc.textContent=formatUSD(vpc?.value);ui.targetGDPpc.textContent=formatUSD(tpc?.value);ui.gdpPcRatio.textContent=ratioText(tpc?.value,vpc?.value,name,'Việt Nam')+(tpc?.year?' · '+tpc.year:'');
  const overlap=intersectionAreaKm2(overlayFeature(),currentTarget),fp=Number.isFinite(overlap)&&Number.isFinite(td)?overlap*td:NaN;ui.footprintPopulation.textContent=formatPopulation(fp);ui.footprintNote.textContent=Number.isFinite(overlap)?'Ước tính từ '+fmt(overlap,' km²')+' footprint nằm trong '+name+' × mật độ trung bình quốc gia.':'Không tính được phần giao hình học.';
- ui.status.textContent='Natural Earth · World Bank '+(tp?.year||'')+' · '+(currentProjection==='mercator'?'OSM / Mercator':'D3 / Equal Earth');
+ ui.status.textContent='Natural Earth · World Bank '+(tp?.year||'')+' · '+(currentProjection==='mercator'?'Vietflex / Google Roadmap':'D3 / Equal Earth');
 }
-function moveToFeature(f,fit=false){if(!f)return;const [lat,lon]=centerOf(f);currentTarget=f;currentLat=lat;currentLon=lon;redrawAll();updateComparison(f);ui.select.value=countryIso(f);if(currentProjection==='mercator'&&fit){const b=L.geoJSON(f).getBounds();if(b.isValid())map.fitBounds(b.pad(.45),{maxZoom:5,animate:true})}}
+function moveToFeature(f,fit=false){if(!f)return;const [lat,lon]=centerOf(f);currentTarget=f;currentLat=lat;currentLon=lon;redrawAll();updateComparison(f);ui.select.value=countryIso(f);if(currentProjection==='mercator'&&fit){const b=new Vietflex.GeoJSON(f).getBounds();if(b.isValid())map.fitBounds(b.pad(.45),{maxZoom:5,animate:true})}}
 function switchProjection(mode){currentProjection=mode;const m=mode==='mercator';ui.mercator.classList.toggle('active',m);ui.equalEarth.classList.toggle('active',!m);ui.mercatorBtn.classList.toggle('active',m);ui.equalEarthBtn.classList.toggle('active',!m);if(m)setTimeout(()=>map.invalidateSize(),0);else setTimeout(sizeEqualEarth,0);renderDistortion()}
 
 function setRotation(deg,update=true){currentRotation=((Number(deg)%360)+360)%360;redrawAll(false);if(update&&currentTarget)updateComparison(currentTarget)}
@@ -165,8 +176,8 @@ async function init(){
   renderChart();world=await loadWorld();
   vnSource=world.features.find(f=>countryIso(f)===VIETNAM_ISO||countryName(f).toLowerCase().includes('vietnam'));if(!vnSource)throw new Error('Không tìm thấy polygon Việt Nam');
   vnCenter=centerOf(vnSource);vnAreaKm2=areaKm2(vnSource);vnNorthSouthKm=northSouthKm(vnSource);currentLat=vnCenter[0];currentLon=vnCenter[1];currentTarget=vnSource;
-  countriesLayer=L.geoJSON(world,{style:{color:'#728078',weight:.65,fillColor:'#fff',fillOpacity:.08},onEachFeature:(f,l)=>{l.on('click',()=>moveToFeature(f,true));l.bindTooltip(countryName(f),{sticky:true})}}).addTo(map);
-  populateSelect();initEqualEarth();redrawAll();await updateComparison(vnSource);map.fitBounds(L.geoJSON(vnSource).getBounds().pad(.9),{maxZoom:5});
+  countriesLayer=new Vietflex.GeoJSON(world,{style:{color:'#728078',weight:.65,fillColor:'#fff',fillOpacity:.08},onEachFeature:(f,l)=>{l.on('click',()=>moveToFeature(f,true));l.bindTooltip(countryName(f),{sticky:true})}}).addTo(map);
+  populateSelect();initEqualEarth();redrawAll();await updateComparison(vnSource);map.fitBounds(new Vietflex.GeoJSON(vnSource).getBounds().pad(.9),{maxZoom:5});
   ui.loading.classList.add('hidden');setTimeout(()=>ui.loading.remove(),350);
  }catch(err){ui.loading.innerHTML='<strong>Không thể khởi tạo</strong><span>'+String(err.message||err)+'</span>'}
 }
