@@ -96,7 +96,7 @@ function endLeafletDrag(){
  if(!isDraggingVN)return;isDraggingVN=false;map.dragging.enable();
  const f=featureAt(currentLat,currentLon)||vnSource;currentTarget=f;ui.select.value=f?countryIso(f):'';updateComparison(f);
 }
-map.on('mousemove',e=>{if(!isDraggingVN)return;currentLat=Math.max(-MAX_LAT,Math.min(MAX_LAT,e.latlng.lat));currentLon=e.latlng.lng;const f=featureAt(currentLat,currentLon);if(f)currentTarget=f;redrawAll(false);if(f){ui.targetName.textContent=countryName(f);ui.targetIso.textContent=countryIso(f)||'—'}}});
+map.on('mousemove',e=>{if(!isDraggingVN)return;currentLat=Math.max(-MAX_LAT,Math.min(MAX_LAT,e.latlng.lat));currentLon=e.latlng.lng;const f=featureAt(currentLat,currentLon);if(f)currentTarget=f;redrawAll(false);if(f){ui.targetName.textContent=countryName(f);ui.targetIso.textContent=countryIso(f)||'—'}});
 map.on('mouseup',endLeafletDrag);map.on('mouseout',()=>{if(isDraggingVN)endLeafletDrag()});
 
 function drawLeafletOverlay(){
