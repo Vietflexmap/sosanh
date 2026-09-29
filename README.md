@@ -25,7 +25,7 @@ Chúng không được mô hình hóa thành polygon ranh giới pháp lý trong
 
 ## Hai phép chiếu
 
-- **Mercator:** Leaflet + OpenStreetMap.
+- **Mercator:** Vietflex Map + Google Roadmap legacy tiles.
 - **Equal Earth:** D3 `geoEqualEarth()`.
 
 Cùng một geometry đã biến đổi được render qua cả hai engine.
@@ -42,11 +42,26 @@ Cùng một geometry đã biến đổi được render qua cả hai engine.
 - hệ số biến dạng Mercator;
 - biểu đồ 0° / 30° / 45° / 60° / 75°.
 
-## Dữ liệu
+## Dữ liệu biên giới quốc gia
 
-- Natural Earth — country boundaries;
+Nguồn chính:
+
+- `datasets/geo-countries/data/countries.geojson`
+- 258 quốc gia và lãnh thổ
+- nguồn gốc Natural Earth **1:10m**
+- geometry được xử lý bằng GDAL `ogr2ogr -makevalid`
+- tọa độ giữ độ chính xác 6 chữ số thập phân
+- schema:
+  - `name`
+  - `ISO3166-1-Alpha-2`
+  - `ISO3166-1-Alpha-3`
+
+Ứng dụng ưu tiên tải từ jsDelivr, sau đó raw GitHub. Nếu cả hai nguồn 1:10m không khả dụng mới hạ xuống Natural Earth 1:110m để trang vẫn hoạt động.
+
+Các nguồn khác:
+
 - World Bank — population/GDP;
-- OpenStreetMap — Mercator basemap;
+- Vietflex Map + Google Roadmap legacy — Mercator basemap;
 - Turf.js — spatial calculations;
 - D3 — Equal Earth rendering.
 
