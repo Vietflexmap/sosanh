@@ -1,7 +1,11 @@
 (() => {
 'use strict';
 
-const WORLD_URL='https://raw.githubusercontent.com/TheTrueSize/natural-earth-vector/main/geojson/ne_50m_admin_0_countries.geojson';
+const WORLD_URLS=[
+ 'https://raw.githubusercontent.com/TheTrueSize/natural-earth-vector/main/geojson/ne_110m_admin_0_countries.geojson',
+ 'https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_admin_0_countries.geojson',
+ 'https://cdn.jsdelivr.net/gh/nvkelso/natural-earth-vector@master/geojson/ne_110m_admin_0_countries.geojson'
+];
 const VIETNAM_ISO='VNM',MAX_LAT=84.8;
 const WB={population:'SP.POP.TOTL',gdp:'NY.GDP.MKTP.CD',gdppc:'NY.GDP.PCAP.CD'};
 const ISLAND_REFS=[
@@ -55,6 +59,27 @@ function transformedGeometry(g,targetLat,targetLon){const tx=pointTransformer(ta
 function overlayFeature(){return{type:'Feature',properties:{name:'Việt Nam'},geometry:transformedGeometry(vnSource.geometry,currentLat,currentLon)}}
 function transformedIslandRefs(){const tx=pointTransformer(currentLat,currentLon);return ISLAND_REFS.map(x=>({...x,coord:tx(x.coord)}))}
 function mercatorAreaFactor(lat){const p=Math.min(MAX_LAT,Math.max(-MAX_LAT,lat))*Math.PI/180;return 1/Math.cos(p)**2}
+
+async function fetchJsonWithTimeout(url,ms=9000){
+ const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),ms);
+ try{
+  const r=await fetch(url,{signal:controller.signal,cache:'force-cache'});
+  if(!r.ok)throw new Error('HTTP '+r.status);
+  const text=await r.text();
+  if(!text||text.length<1000)throw new Error('Dữ liệu rỗng');
+  const json=JSON.parse(text);
+  if(!json||json.type!=='FeatureCollection'||!Array.isArray(json.features)||json.features.length<100)throw new Error('GeoJSON không hợp lệ');
+  return json;
+ }finally{clearTimeout(timer)}
+}
+async function loadWorld(){
+ ui.loading.querySelector('strong').textContent='Đang nạp bản đồ thế giới…';
+ try{
+  return await Promise.any(WORLD_URLS.map(url=>fetchJsonWithTimeout(url)));
+ }catch(err){
+  throw new Error('Không thể tải dữ liệu bản đồ thế giới. Hãy tải lại trang hoặc kiểm tra kết nối mạng.');
+ }
+}
 
 function renderChart(){const ls=[0,30,45,60,75],rows=ls.map(lat=>({lat,f:mercatorAreaFactor(lat)})),max=Math.max(...rows.map(r=>r.f));ui.chart.innerHTML=rows.map(r=>'<div class="chart-col"><div class="chart-bar-wrap"><div class="chart-bar" style="height:'+Math.max(3,r.f/max*72)+'px"></div></div><div class="chart-value">'+r.f.toFixed(r.f<10?2:1)+'×</div><div class="chart-label">'+r.lat+'°</div></div>').join('')}
 function renderDistortion(){const f=mercatorAreaFactor(currentLat);if(currentProjection==='equalEarth'){ui.projectionLabel.textContent='Equal Earth';ui.distortion.textContent='1.00× diện tích';ui.distortionBar.style.width='4%';ui.distortionText.textContent='Equal Earth là phép chiếu equal-area.'}else{ui.projectionLabel.textContent='Mercator tại vị trí hiện tại';ui.distortion.textContent=f.toLocaleString('vi-VN',{maximumFractionDigits:2})+'×';ui.distortionBar.style.width=Math.max(4,Math.min(100,4+Math.log2(f)*17))+'%';ui.distortionText.textContent='Hệ số xấp xỉ theo diện tích: 1 / cos²(vĩ độ).'}}
@@ -137,7 +162,7 @@ ui.rotationRange.addEventListener('input',()=>setRotation(ui.rotationRange.value
 function populateSelect(){const items=world.features.map(f=>({name:countryName(f),iso:countryIso(f)})).filter(x=>x.iso).sort((a,b)=>a.name.localeCompare(b.name,'vi'));ui.select.innerHTML='<option value="">Chọn quốc gia…</option>'+items.map(x=>'<option value="'+x.iso+'">'+String(x.name).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))+'</option>').join('');ui.select.value=VIETNAM_ISO}
 async function init(){
  try{
-  renderChart();const r=await fetch(WORLD_URL);if(!r.ok)throw new Error('Không tải được Natural Earth');world=await r.json();
+  renderChart();world=await loadWorld();
   vnSource=world.features.find(f=>countryIso(f)===VIETNAM_ISO||countryName(f).toLowerCase().includes('vietnam'));if(!vnSource)throw new Error('Không tìm thấy polygon Việt Nam');
   vnCenter=centerOf(vnSource);vnAreaKm2=areaKm2(vnSource);vnNorthSouthKm=northSouthKm(vnSource);currentLat=vnCenter[0];currentLon=vnCenter[1];currentTarget=vnSource;
   countriesLayer=L.geoJSON(world,{style:{color:'#728078',weight:.65,fillColor:'#fff',fillOpacity:.08},onEachFeature:(f,l)=>{l.on('click',()=>moveToFeature(f,true));l.bindTooltip(countryName(f),{sticky:true})}}).addTo(map);
