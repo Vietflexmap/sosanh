@@ -8,7 +8,7 @@
   <title>Vietnam Global Comparator</title>
   <link rel="preconnect" href="https://cdn.jsdelivr.net">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Vietflexmap/VN@6144d565fcf236727577ab3c4471bbe49f86892f/dist/vietflex.css">
-  <link rel="stylesheet" href="./styles.css?v=20260929-4" />
+  <link rel="stylesheet" href="./styles.css?v=20260929-5" />
 </head>
 <body>
 <main id="app">
@@ -97,10 +97,11 @@
       <div><i class="swatch vn"></i> Việt Nam — kéo trực tiếp toàn bộ hình</div>
       <div><i class="swatch islands"></i> Điểm tham chiếu Hoàng Sa / Trường Sa đi cùng phép biến đổi</div>
       <div><i class="swatch target"></i> Quốc gia đang so sánh</div>
+      <div><i class="swatch borders"></i> Biên giới quốc gia · Geo Countries / Natural Earth 1:10m</div>
     </section>
 
     <footer>
-      <span id="dataStatus">Natural Earth · World Bank · Vietflex Map</span>
+      <span id="dataStatus">Geo Countries 1:10m · World Bank · Vietflex Map</span>
       <a href="https://github.com/Vietflexmap/sosanh" target="_blank" rel="noreferrer">Mã nguồn</a>
     </footer>
   </aside>
@@ -108,6 +109,7 @@
   <dialog id="infoDialog">
     <button id="closeInfo" class="dialog-close" type="button">×</button>
     <h2>Kéo và xoay Việt Nam</h2>
+    <p><b>Đường biên quốc gia</b> dùng bộ <code>datasets/geo-countries</code>, được tạo từ Natural Earth 1:10m, làm hợp lệ hình học và giữ tọa độ tới 6 chữ số thập phân.</p>
     <p>Toàn bộ polygon Việt Nam là bề mặt kéo. Khi giữ chuột, bản đồ nền tạm ngừng pan và tâm Việt Nam bám theo con trỏ. Khi thả, quốc gia dưới tâm được dùng làm đối tượng so sánh.</p>
     <p>Góc xoay 0–359° được áp dụng như một phép quay 3D quanh trục xuyên qua tâm mới của Việt Nam, sau phép quay vận chuyển trên mặt cầu. Vì vậy hình không bị co giãn tùy ý.</p>
     <p>Các nhãn Hoàng Sa và Trường Sa được hiển thị như <b>điểm tham chiếu trực quan</b> và cùng di chuyển/xoay với hình Việt Nam. Chúng không phải polygon ranh giới pháp lý.</p>
@@ -121,6 +123,6 @@
 <script src="https://cdn.jsdelivr.net/gh/Vietflexmap/VN@6144d565fcf236727577ab3c4471bbe49f86892f/dist/vietflex.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@turf/turf@7.2.0/turf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
-<script src="./app.js?v=20260929-4"></script>
+<script src="./app.js?v=20260929-5"></script>
 </body>
 </html>
