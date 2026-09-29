@@ -94,10 +94,12 @@ async function fetchJsonWithTimeout(url,ms=22000){
  }finally{clearTimeout(timer)}
 }
 async function firstValid(urls,timeout){
- const settled=await Promise.allSettled(urls.map(url=>fetchJsonWithTimeout(url,timeout)));
- const ok=settled.find(x=>x.status==='fulfilled');
- if(ok)return ok.value;
- throw new Error('Không có nguồn dữ liệu khả dụng');
+ let lastError=null;
+ for(const url of urls){
+  try{return await fetchJsonWithTimeout(url,timeout)}
+  catch(err){lastError=err}
+ }
+ throw lastError||new Error('Không có nguồn dữ liệu khả dụng');
 }
 async function loadWorld(){
  const label=ui.loading.querySelector('strong');
