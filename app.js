@@ -107,7 +107,7 @@ function drawLeafletOverlay(){
    const m=L.circleMarker([ref.coord[1],ref.coord[0]],{radius:5,color:'#fff',weight:2,fillColor:'#d71920',fillOpacity:1,className:'vn-draggable'}).bindTooltip(ref.name,{permanent:true,direction:'right',className:'vn-island-label'});
    m.on('mousedown',startLeafletDrag);m.on('touchstart',startLeafletDrag);return m;
  })).addTo(map);
- vnOverlay.bringToFront();islandLayer.bringToFront();
+ vnOverlay.bringToFront();islandLayer.eachLayer(layer=>{if(typeof layer.bringToFront==='function')layer.bringToFront()});
 }
 
 function sizeEqualEarth(){if(!equalSvg)return;const b=ui.equalEarth.getBoundingClientRect(),w=Math.max(320,b.width),h=Math.max(240,b.height);equalSvg.attr('viewBox','0 0 '+w+' '+h);equalProjection.fitExtent([[18,18],[w-18,h-18]],{type:'Sphere'});equalPath.projection(equalProjection);equalSvg.select('.equal-sphere').attr('d',equalPath({type:'Sphere'}));equalSvg.select('.equal-graticule').attr('d',equalPath(d3.geoGraticule10()));equalWorldG.selectAll('path').attr('d',equalPath);redrawEqual()}
