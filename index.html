@@ -4,8 +4,8 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <meta name="theme-color" content="#f7f5ef" />
-  <meta name="description" content="So sánh kích thước thật của Việt Nam với các quốc gia trên thế giới bằng phép quay trên mặt cầu, kèm diện tích, dân số và mật độ." />
-  <title>Việt Nam — Kích thước thật trên bản đồ</title>
+  <meta name="description" content="Vietnam Global Comparator — so sánh hình dạng, diện tích, dân số, GDP và biến dạng phép chiếu của Việt Nam với thế giới." />
+  <title>Vietnam Global Comparator</title>
   <link rel="preconnect" href="https://unpkg.com">
   <link rel="preconnect" href="https://tile.openstreetmap.org">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
@@ -13,14 +13,15 @@
 </head>
 <body>
   <main id="app">
-    <div id="map" aria-label="Bản đồ so sánh kích thước Việt Nam"></div>
+    <div id="map" class="map-engine active" aria-label="Bản đồ Mercator"></div>
+    <svg id="equalEarth" class="map-engine" aria-label="Bản đồ Equal Earth"></svg>
 
     <header class="topbar">
       <div class="brand">
         <div class="flag" aria-hidden="true">★</div>
         <div>
-          <h1>Việt Nam · True Size</h1>
-          <p>Kéo Việt Nam đi khắp thế giới để thấy Mercator làm thay đổi cảm nhận kích thước.</p>
+          <h1>Vietnam Global Comparator</h1>
+          <p>Kéo Việt Nam đi khắp thế giới · so sánh địa lý, dân số, GDP và phép chiếu.</p>
         </div>
       </div>
       <button id="infoBtn" class="icon-btn" type="button" aria-label="Thông tin phương pháp">i</button>
@@ -28,14 +29,25 @@
 
     <aside class="panel" id="panel">
       <section class="controls">
-        <label for="countrySelect">Đưa Việt Nam tới quốc gia</label>
-        <div class="select-row">
-          <select id="countrySelect" aria-label="Chọn quốc gia so sánh">
-            <option value="">Đang tải danh sách…</option>
-          </select>
-          <button id="homeBtn" type="button" title="Đưa Việt Nam về vị trí gốc">Về VN</button>
+        <div class="control-grid">
+          <div>
+            <label for="countrySelect">Đưa Việt Nam tới quốc gia</label>
+            <div class="select-row">
+              <select id="countrySelect" aria-label="Chọn quốc gia so sánh">
+                <option value="">Đang tải danh sách…</option>
+              </select>
+              <button id="homeBtn" type="button" title="Đưa Việt Nam về vị trí gốc">Về VN</button>
+            </div>
+          </div>
+          <div>
+            <label>Phép chiếu</label>
+            <div class="projection-switch" role="group" aria-label="Chọn phép chiếu">
+              <button id="mercatorBtn" class="active" type="button">Mercator</button>
+              <button id="equalEarthBtn" type="button">Equal Earth</button>
+            </div>
+          </div>
         </div>
-        <p class="hint">Hoặc kéo chấm đỏ giữa hình Việt Nam tới bất kỳ vị trí nào trên bản đồ.</p>
+        <p class="hint">Kéo chấm đỏ giữa hình Việt Nam hoặc bấm vào quốc gia. Equal Earth bảo toàn diện tích; Mercator bảo toàn góc cục bộ nhưng phóng đại mạnh ở vĩ độ cao.</p>
       </section>
 
       <section class="compare-card">
@@ -49,48 +61,65 @@
 
         <div class="metric">
           <div class="metric-title">Diện tích địa lý</div>
-          <div class="metric-values">
-            <strong id="vnArea">—</strong>
-            <span>vs</span>
-            <strong id="targetArea">—</strong>
-          </div>
+          <div class="metric-values"><strong id="vnArea">—</strong><span>vs</span><strong id="targetArea">—</strong></div>
           <div class="metric-sub" id="areaRatio">—</div>
         </div>
 
         <div class="metric">
+          <div class="metric-title">Chiều dài Bắc–Nam</div>
+          <div class="metric-values"><strong id="vnNorthSouth">—</strong><span>vs</span><strong id="targetNorthSouth">—</strong></div>
+          <div class="metric-sub" id="northSouthRatio">Đo xấp xỉ theo hai điểm biên cực Bắc/cực Nam</div>
+        </div>
+
+        <div class="metric">
           <div class="metric-title">Dân số</div>
-          <div class="metric-values">
-            <strong id="vnPopulation">—</strong>
-            <span>vs</span>
-            <strong id="targetPopulation">—</strong>
-          </div>
+          <div class="metric-values"><strong id="vnPopulation">—</strong><span>vs</span><strong id="targetPopulation">—</strong></div>
           <div class="metric-sub" id="populationRatio">Đang tải World Bank…</div>
         </div>
 
         <div class="metric">
           <div class="metric-title">Mật độ dân số</div>
-          <div class="metric-values">
-            <strong id="vnDensity">—</strong>
-            <span>vs</span>
-            <strong id="targetDensity">—</strong>
-          </div>
+          <div class="metric-values"><strong id="vnDensity">—</strong><span>vs</span><strong id="targetDensity">—</strong></div>
           <div class="metric-sub" id="densityRatio">—</div>
+        </div>
+
+        <div class="metric">
+          <div class="metric-title">GDP danh nghĩa</div>
+          <div class="metric-values"><strong id="vnGDP">—</strong><span>vs</span><strong id="targetGDP">—</strong></div>
+          <div class="metric-sub" id="gdpRatio">World Bank · NY.GDP.MKTP.CD</div>
+        </div>
+
+        <div class="metric">
+          <div class="metric-title">GDP/người</div>
+          <div class="metric-values"><strong id="vnGDPpc">—</strong><span>vs</span><strong id="targetGDPpc">—</strong></div>
+          <div class="metric-sub" id="gdpPcRatio">World Bank · NY.GDP.PCAP.CD</div>
+        </div>
+
+        <div class="metric emphasis">
+          <div class="metric-title">Dân số ước tính trong footprint Việt Nam</div>
+          <div class="footprint-value" id="footprintPopulation">—</div>
+          <div class="metric-sub" id="footprintNote">Ước tính = diện tích Việt Nam chồng lên quốc gia đích × mật độ dân số trung bình của quốc gia đó.</div>
         </div>
 
         <div class="distortion">
           <div>
-            <span>Mercator tại vị trí hiện tại</span>
+            <span id="projectionLabel">Mercator tại vị trí hiện tại</span>
             <strong id="distortionFactor">1.00×</strong>
           </div>
           <div class="bar"><i id="distortionBar"></i></div>
-          <small>Hệ số xấp xỉ theo diện tích: 1 / cos²(vĩ độ). Đây là mức phóng đại do phép chiếu, không phải diện tích thật.</small>
+          <small id="distortionText">Hệ số xấp xỉ theo diện tích: 1 / cos²(vĩ độ).</small>
+        </div>
+
+        <div class="chart-card">
+          <div class="metric-title">Cùng một Việt Nam qua các vĩ độ</div>
+          <div id="distortionChart" class="distortion-chart" aria-label="Biểu đồ hệ số phóng đại Mercator"></div>
         </div>
       </section>
 
       <section class="legend">
-        <div><i class="swatch vn"></i> Việt Nam được quay trên mặt cầu</div>
+        <div><i class="swatch vn"></i> Việt Nam được quay cứng trên mặt cầu</div>
         <div><i class="swatch target"></i> Quốc gia đang so sánh</div>
-        <div><i class="swatch world"></i> Ranh giới Natural Earth</div>
+        <div><i class="swatch world"></i> Natural Earth</div>
       </section>
 
       <footer>
@@ -101,22 +130,23 @@
 
     <dialog id="infoDialog">
       <button id="closeInfo" class="dialog-close" type="button" aria-label="Đóng">×</button>
-      <h2>Vì sao hình Việt Nam thay đổi trên màn hình?</h2>
-      <p>Hình học Việt Nam không bị co giãn tùy ý. Mỗi đỉnh được chuyển sang vector 3D trên mặt cầu, quay cứng từ tâm Việt Nam tới vị trí đích, rồi mới chiếu xuống Web Mercator.</p>
-      <p>Phép quay bảo toàn khoảng cách góc trên mặt cầu. Vì Web Mercator phóng đại theo vĩ độ, cùng một Việt Nam sẽ trông lớn hơn khi đi xa xích đạo.</p>
-      <div class="formula">K<sub>area</sub> ≈ sec² φ = 1 / cos² φ</div>
-      <p><b>Diện tích trong bảng</b> được tính từ polygon địa lý (Turf, mô hình cầu), không lấy theo diện tích pixel trên màn hình. Dân số lấy bản ghi gần nhất có dữ liệu từ World Bank; nếu API không truy cập được sẽ dùng ước tính có sẵn trong Natural Earth.</p>
-      <p class="note">Ranh giới dùng Natural Earth để minh họa bản đồ thế giới, không nhằm thể hiện quan điểm pháp lý về chủ quyền hoặc phân định biên giới.</p>
+      <h2>Vietnam Global Comparator hoạt động thế nào?</h2>
+      <p>Polygon Việt Nam được chuyển sang vector 3D trên mặt cầu, quay cứng tới vị trí đích rồi mới đưa vào engine hiển thị. Cách này tránh việc co giãn hình học tùy ý bằng cách cộng trừ kinh/vĩ độ.</p>
+      <p><b>Mercator</b> dùng Leaflet/OSM. <b>Equal Earth</b> dùng D3 geoEqualEarth() và cùng dữ liệu GeoJSON. Equal Earth là phép chiếu equal-area nên diện tích tương đối được bảo toàn tốt hơn khi quan sát toàn cầu.</p>
+      <div class="formula">K<sub>Mercator area</sub> ≈ sec² φ = 1 / cos² φ</div>
+      <p>Dân số và GDP lấy bản ghi gần nhất có dữ liệu từ World Bank. “Dân số trong footprint” hiện là một <b>ước tính cấp quốc gia</b>, không phải phép đếm raster dân số theo ô lưới.</p>
+      <p class="note">Ranh giới Natural Earth chỉ dùng cho minh họa địa lý; không nhằm thể hiện quan điểm pháp lý về chủ quyền hoặc phân định biên giới.</p>
     </dialog>
 
     <div id="loading" class="loading">
       <div class="spinner"></div>
-      <strong>Đang nạp dữ liệu thế giới…</strong>
+      <strong>Đang nạp Vietnam Global Comparator…</strong>
     </div>
   </main>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
   <script src="https://cdn.jsdelivr.net/npm/@turf/turf@7.2.0/turf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
   <script src="./app.js"></script>
 </body>
 </html>
