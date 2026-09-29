@@ -4,11 +4,12 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <meta name="theme-color" content="#f7f5ef" />
-  <meta name="description" content="Vietnam Global Comparator — kéo, thả và xoay Việt Nam để so sánh với thế giới." />
-  <title>Vietnam Global Comparator</title>
+  <meta name="description" content="Bảng so sánh toàn cầu về Việt Nam — kéo, thả, xoay Việt Nam và so sánh trực quan với các quốc gia." />
+  <title>Bảng so sánh toàn cầu về Việt Nam</title>
+
   <link rel="preconnect" href="https://cdn.jsdelivr.net">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Vietflexmap/VN@6144d565fcf236727577ab3c4471bbe49f86892f/dist/vietflex.css">
-  <link rel="stylesheet" href="./styles.css?v=20260929-5" />
+  <link rel="stylesheet" href="./styles.css?v=20260929-6" />
 </head>
 <body>
 <main id="app">
@@ -19,69 +20,108 @@
     <div class="brand">
       <div class="flag" aria-hidden="true">★</div>
       <div>
-        <h1>Vietnam Global Comparator</h1>
-        <p>Nắm trực tiếp bản đồ Việt Nam để kéo · thả · xoay 360° và so sánh.</p>
+        <h1>Bảng so sánh toàn cầu về Việt Nam</h1>
+        <p>Kéo Việt Nam tới bất kỳ quốc gia nào để so sánh trực quan.</p>
       </div>
     </div>
-    <button id="infoBtn" class="icon-btn" type="button" aria-label="Thông tin phương pháp">i</button>
   </header>
+
+  <div class="top-tools" aria-label="Công cụ bản đồ">
+    <div class="projection-switch compact">
+      <button id="mercatorBtn" class="active" type="button">Mercator</button>
+      <button id="equalEarthBtn" type="button">Equal Earth</button>
+    </div>
+    <button id="infoBtn" class="tool-btn" type="button" aria-label="Kéo và xoay Việt Nam" title="Kéo và xoay Việt Nam">i</button>
+  </div>
 
   <aside class="panel">
     <section class="controls">
-      <div class="control-grid">
-        <div>
-          <label for="countrySelect">Đưa Việt Nam tới quốc gia</label>
-          <div class="select-row">
-            <select id="countrySelect"><option value="">Đang tải…</option></select>
-            <button id="homeBtn" type="button">Về VN</button>
-          </div>
-        </div>
-
-        <div>
-          <label>Phép chiếu</label>
-          <div class="projection-switch">
-            <button id="mercatorBtn" class="active" type="button">Mercator</button>
-            <button id="equalEarthBtn" type="button">Equal Earth</button>
-          </div>
-        </div>
-
-        <div class="rotation-control">
-          <label>Xoay Việt Nam</label>
-          <div class="compass-row">
-            <div id="compass" class="compass" role="slider" aria-label="Góc xoay Việt Nam" aria-valuemin="0" aria-valuemax="359" aria-valuenow="0" tabindex="0">
-              <span class="n">N</span><span class="e">E</span><span class="s">S</span><span class="w">W</span>
-              <i id="compassNeedle"></i>
-              <b id="compassHub"></b>
-            </div>
-            <div class="angle-box">
-              <strong id="rotationValue">0°</strong>
-              <input id="rotationRange" type="range" min="0" max="359" step="1" value="0" aria-label="Góc xoay Việt Nam">
-              <button id="resetRotation" type="button">Đặt lại hướng Bắc</button>
-            </div>
-          </div>
-        </div>
+      <label for="countrySelect">Đưa Việt Nam tới quốc gia</label>
+      <div class="select-row">
+        <select id="countrySelect"><option value="">Đang tải…</option></select>
+        <button id="homeBtn" class="flag-home" type="button" aria-label="Về Việt Nam" title="Về Việt Nam">🇻🇳</button>
       </div>
-
-      <p class="hint"><b>Cách dùng:</b> nhấn giữ trực tiếp lên vùng màu đỏ của Việt Nam rồi kéo sang quốc gia khác. Khi thả, hệ thống tự nhận diện quốc gia nằm dưới tâm Việt Nam và cập nhật bảng so sánh.</p>
+      <p class="hint">Nhấn giữ trực tiếp vùng Việt Nam màu đỏ rồi kéo sang quốc gia khác. Khi thả, bảng so sánh tự cập nhật.</p>
     </section>
 
     <section class="compare-card">
       <div class="compare-head">
-        <div><span class="eyebrow">Đang so sánh</span><h2>Việt Nam ↔ <span id="targetName">Việt Nam</span></h2></div>
+        <div>
+          <span class="eyebrow">Đang so sánh</span>
+          <h2>Việt Nam <span class="swap">↔</span> <span id="targetName">Vietnam</span></h2>
+        </div>
         <span class="badge" id="targetIso">VNM</span>
       </div>
 
-      <div class="metric"><div class="metric-title">Diện tích địa lý</div><div class="metric-values"><strong id="vnArea">—</strong><span>vs</span><strong id="targetArea">—</strong></div><div class="metric-sub" id="areaRatio">—</div></div>
-      <div class="metric"><div class="metric-title">Chiều dài Bắc–Nam</div><div class="metric-values"><strong id="vnNorthSouth">—</strong><span>vs</span><strong id="targetNorthSouth">—</strong></div><div class="metric-sub" id="northSouthRatio">—</div></div>
-      <div class="metric"><div class="metric-title">Dân số</div><div class="metric-values"><strong id="vnPopulation">—</strong><span>vs</span><strong id="targetPopulation">—</strong></div><div class="metric-sub" id="populationRatio">—</div></div>
-      <div class="metric"><div class="metric-title">Mật độ dân số</div><div class="metric-values"><strong id="vnDensity">—</strong><span>vs</span><strong id="targetDensity">—</strong></div><div class="metric-sub" id="densityRatio">—</div></div>
-      <div class="metric"><div class="metric-title">GDP danh nghĩa</div><div class="metric-values"><strong id="vnGDP">—</strong><span>vs</span><strong id="targetGDP">—</strong></div><div class="metric-sub" id="gdpRatio">—</div></div>
-      <div class="metric"><div class="metric-title">GDP/người</div><div class="metric-values"><strong id="vnGDPpc">—</strong><span>vs</span><strong id="targetGDPpc">—</strong></div><div class="metric-sub" id="gdpPcRatio">—</div></div>
+      <div class="chart-legend-inline">
+        <span><i class="legend-dot vn-dot"></i>Việt Nam</span>
+        <span><i class="legend-dot target-dot"></i><b id="targetLegendName">Vietnam</b></span>
+      </div>
 
-      <div class="metric emphasis">
-        <div class="metric-title">Dân số ước tính trong footprint Việt Nam</div>
-        <div class="footprint-value" id="footprintPopulation">—</div>
-        <div class="metric-sub" id="footprintNote">—</div>
+      <div class="comparison-grid">
+        <article class="comparison-metric">
+          <div class="metric-title">Diện tích địa lý</div>
+          <div class="paired-bars">
+            <div class="bar-item"><span id="vnArea">—</span><div class="bar-track"><i id="vnAreaBar" class="data-bar vn-bar"></i></div><small>Việt Nam</small></div>
+            <div class="bar-item"><span id="targetArea">—</span><div class="bar-track"><i id="targetAreaBar" class="data-bar target-bar"></i></div><small id="targetAreaLabel">Quốc gia</small></div>
+          </div>
+          <div class="metric-percent" id="areaRatio">—</div>
+        </article>
+
+        <article class="comparison-metric">
+          <div class="metric-title">Chiều dài Bắc–Nam</div>
+          <div class="paired-bars">
+            <div class="bar-item"><span id="vnNorthSouth">—</span><div class="bar-track"><i id="vnNorthSouthBar" class="data-bar vn-bar"></i></div><small>Việt Nam</small></div>
+            <div class="bar-item"><span id="targetNorthSouth">—</span><div class="bar-track"><i id="targetNorthSouthBar" class="data-bar target-bar"></i></div><small id="targetNorthSouthLabel">Quốc gia</small></div>
+          </div>
+          <div class="metric-percent" id="northSouthRatio">—</div>
+        </article>
+
+        <article class="comparison-metric">
+          <div class="metric-title">Dân số</div>
+          <div class="paired-bars">
+            <div class="bar-item"><span id="vnPopulation">—</span><div class="bar-track"><i id="vnPopulationBar" class="data-bar vn-bar"></i></div><small>Việt Nam</small></div>
+            <div class="bar-item"><span id="targetPopulation">—</span><div class="bar-track"><i id="targetPopulationBar" class="data-bar target-bar"></i></div><small id="targetPopulationLabel">Quốc gia</small></div>
+          </div>
+          <div class="metric-percent" id="populationRatio">—</div>
+        </article>
+
+        <article class="comparison-metric">
+          <div class="metric-title">Mật độ dân số</div>
+          <div class="paired-bars">
+            <div class="bar-item"><span id="vnDensity">—</span><div class="bar-track"><i id="vnDensityBar" class="data-bar vn-bar"></i></div><small>Việt Nam</small></div>
+            <div class="bar-item"><span id="targetDensity">—</span><div class="bar-track"><i id="targetDensityBar" class="data-bar target-bar"></i></div><small id="targetDensityLabel">Quốc gia</small></div>
+          </div>
+          <div class="metric-percent" id="densityRatio">—</div>
+        </article>
+
+        <article class="comparison-metric">
+          <div class="metric-title">GDP danh nghĩa</div>
+          <div class="paired-bars">
+            <div class="bar-item"><span id="vnGDP">—</span><div class="bar-track"><i id="vnGDPBar" class="data-bar vn-bar"></i></div><small>Việt Nam</small></div>
+            <div class="bar-item"><span id="targetGDP">—</span><div class="bar-track"><i id="targetGDPBar" class="data-bar target-bar"></i></div><small id="targetGDPLabel">Quốc gia</small></div>
+          </div>
+          <div class="metric-percent" id="gdpRatio">—</div>
+        </article>
+
+        <article class="comparison-metric">
+          <div class="metric-title">GDP/người</div>
+          <div class="paired-bars">
+            <div class="bar-item"><span id="vnGDPpc">—</span><div class="bar-track"><i id="vnGDPpcBar" class="data-bar vn-bar"></i></div><small>Việt Nam</small></div>
+            <div class="bar-item"><span id="targetGDPpc">—</span><div class="bar-track"><i id="targetGDPpcBar" class="data-bar target-bar"></i></div><small id="targetGDPpcLabel">Quốc gia</small></div>
+          </div>
+          <div class="metric-percent" id="gdpPcRatio">—</div>
+        </article>
+
+        <article class="comparison-metric footprint-metric">
+          <div class="metric-title">Dân số trong footprint Việt Nam</div>
+          <div class="paired-bars">
+            <div class="bar-item"><span id="vnFootprintPopulation">—</span><div class="bar-track"><i id="vnFootprintBar" class="data-bar vn-bar"></i></div><small>Dân số Việt Nam</small></div>
+            <div class="bar-item"><span id="footprintPopulation">—</span><div class="bar-track"><i id="targetFootprintBar" class="data-bar target-bar"></i></div><small id="targetFootprintLabel">Footprint tại quốc gia</small></div>
+          </div>
+          <div class="metric-percent" id="footprintRatio">—</div>
+          <div class="metric-note" id="footprintNote">—</div>
+        </article>
       </div>
 
       <div class="distortion">
@@ -90,14 +130,10 @@
         <small id="distortionText">Hệ số xấp xỉ theo diện tích: 1 / cos²(vĩ độ).</small>
       </div>
 
-      <div class="chart-card"><div class="metric-title">Cùng một Việt Nam qua các vĩ độ</div><div id="distortionChart" class="distortion-chart"></div></div>
-    </section>
-
-    <section class="legend">
-      <div><i class="swatch vn"></i> Việt Nam — kéo trực tiếp toàn bộ hình</div>
-      <div><i class="swatch islands"></i> Điểm tham chiếu Hoàng Sa / Trường Sa đi cùng phép biến đổi</div>
-      <div><i class="swatch target"></i> Quốc gia đang so sánh</div>
-      <div><i class="swatch borders"></i> Biên giới quốc gia · Geo Countries / Natural Earth 1:10m</div>
+      <div class="chart-card">
+        <div class="metric-title">Cùng một Việt Nam qua các vĩ độ</div>
+        <div id="distortionChart" class="distortion-chart"></div>
+      </div>
     </section>
 
     <footer>
@@ -106,23 +142,44 @@
     </footer>
   </aside>
 
+  <aside id="rotationTool" class="rotation-tool collapsed" aria-label="Xoay Việt Nam">
+    <button id="rotationToggle" class="rotation-toggle" type="button" aria-expanded="false" title="Xoay Việt Nam">🧭</button>
+    <div class="rotation-body">
+      <div class="rotation-head">
+        <strong>Xoay Việt Nam</strong>
+        <button id="rotationMinimize" type="button" aria-label="Thu nhỏ">−</button>
+      </div>
+      <div class="compass-row">
+        <div id="compass" class="compass" role="slider" aria-label="Góc xoay Việt Nam" aria-valuemin="0" aria-valuemax="359" aria-valuenow="0" tabindex="0">
+          <span class="n">N</span><span class="e">E</span><span class="s">S</span><span class="w">W</span>
+          <i id="compassNeedle"></i><b id="compassHub"></b>
+        </div>
+        <div class="angle-box">
+          <strong id="rotationValue">0°</strong>
+          <input id="rotationRange" type="range" min="0" max="359" step="1" value="0" aria-label="Góc xoay Việt Nam">
+          <button id="resetRotation" type="button">Bắc 0°</button>
+        </div>
+      </div>
+    </div>
+  </aside>
+
   <dialog id="infoDialog">
     <button id="closeInfo" class="dialog-close" type="button">×</button>
     <h2>Kéo và xoay Việt Nam</h2>
-    <p><b>Đường biên quốc gia</b> dùng bộ <code>datasets/geo-countries</code>, được tạo từ Natural Earth 1:10m, làm hợp lệ hình học và giữ tọa độ tới 6 chữ số thập phân.</p>
-    <p>Toàn bộ polygon Việt Nam là bề mặt kéo. Khi giữ chuột, bản đồ nền tạm ngừng pan và tâm Việt Nam bám theo con trỏ. Khi thả, quốc gia dưới tâm được dùng làm đối tượng so sánh.</p>
-    <p>Góc xoay 0–359° được áp dụng như một phép quay 3D quanh trục xuyên qua tâm mới của Việt Nam, sau phép quay vận chuyển trên mặt cầu. Vì vậy hình không bị co giãn tùy ý.</p>
-    <p>Các nhãn Hoàng Sa và Trường Sa được hiển thị như <b>điểm tham chiếu trực quan</b> và cùng di chuyển/xoay với hình Việt Nam. Chúng không phải polygon ranh giới pháp lý.</p>
+    <p><b>Đường biên quốc gia</b> dùng bộ <code>datasets/geo-countries</code>, được tạo từ Natural Earth 1:10m.</p>
+    <p>Nhấn giữ trực tiếp polygon Việt Nam để kéo. Khi thả, quốc gia dưới tâm Việt Nam trở thành đối tượng so sánh.</p>
+    <p>La bàn ở góc phải dưới cho phép xoay 0–359°. Phép xoay được thực hiện trên mặt cầu, không phải CSS rotate.</p>
+    <p>Các nhãn Hoàng Sa và Trường Sa được hiển thị như điểm tham chiếu trực quan và đi cùng phép biến đổi.</p>
     <div class="formula">P' = R<sub>spin</sub>(θ) · R<sub>move</sub> · P</div>
     <p class="note">Ranh giới và nhãn bản đồ phục vụ minh họa địa lý, không nhằm thể hiện kết luận pháp lý về chủ quyền hoặc phân định biên giới.</p>
   </dialog>
 
-  <div id="loading" class="loading"><div class="spinner"></div><strong>Đang nạp Vietnam Global Comparator…</strong></div>
+  <div id="loading" class="loading"><div class="spinner"></div><strong>Đang nạp Bảng so sánh toàn cầu về Việt Nam…</strong></div>
 </main>
 
 <script src="https://cdn.jsdelivr.net/gh/Vietflexmap/VN@6144d565fcf236727577ab3c4471bbe49f86892f/dist/vietflex.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@turf/turf@7.2.0/turf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
-<script src="./app.js?v=20260929-5"></script>
+<script src="./app.js?v=20260929-6"></script>
 </body>
 </html>
